@@ -41,38 +41,38 @@ router.post('/', validateUser, async (req, res, next) => {
   
 });
 
-router.put('/:id', validateUserId, async (req, res) => {
+router.put('/:id', validateUserId, validateUser, async (req, res) => {
   // RETURN THE FRESHLY UPDATED USER OBJECT
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
   try {
-
     // RETURN AN ARRAY WITH ALL THE USERS
-    const updateUser = await Users.update(req.user);
+    const updateUser = await Users.update(req.params.id, {name: req.name});
     res.status(200).json(updateUser)
   } catch (err) {
     res.status(404).json({ message: `Update countered Error` })
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateUserId, validateUser, async (req, res, next) => {
   // RETURN THE FRESHLY DELETED USER OBJECT
   // this needs a middleware to verify user id
   try {
-
     // RETURN AN ARRAY WITH ALL THE USERS
-    const deleteUser = await Users.remove(req.params.id);
-    res.status(200).json(deleteUser)
+    const deleteUser = await Users.remove(req.params.id, req.user);
+    res.json(deleteUser)
   } catch (err) {
-    res.status(404).json({ message: `Request could not process found` })
+    next(err)
   }
 });
 
-router.get('/:id/posts', validateUserId, (req, res) => {
+router.get('/:id/posts', validateUserId, async (req, res) => {
   // RETURN THE ARRAY OF USER POSTS
   // this needs a middleware to verify user id
+  try {
 
-  Posts.getUserPosts(req.params.id);
+  
+   const findPosts = await Posts.getUserPosts(req.params.id);
     res.status(200).json(findPosts)
   } catch (err) {
     res.status(404).json({ message: `Request not found` })
